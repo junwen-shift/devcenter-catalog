@@ -28,13 +28,14 @@ param runtimeVersion string = '8'
 var functionAppName = appName
 var hostingPlanName = '${appName}-plan'
 var applicationInsightsName = '${appName}-ai'
-var storageAccountName = '${toLower(appName)}${uniqueString(resourceGroup().id)}'
+var storageAccountName = '${toLower(take(appName, 11))}${uniqueString(resourceGroup().id)}'
 var functionWorkerRuntime = runtime
+var deploymentLocation = location != '' ? location : resourceGroup().location
 
 // Storage Account
 resource storageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {
   name: storageAccountName
-  location: location
+  location: deploymentLocation
   sku: {
     name: 'Standard_LRS'
   }
@@ -51,7 +52,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {
 // Hosting Plan
 resource hostingPlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: hostingPlanName
-  location: location
+  location: deploymentLocation
   kind: 'linux'
   sku: {
     name: sku
@@ -66,7 +67,7 @@ resource hostingPlan 'Microsoft.Web/serverfarms@2022-03-01' = {
 // Application Insights
 resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: applicationInsightsName
-  location: location
+  location: deploymentLocation
   kind: 'web'
   properties: {
     Application_Type: 'web'
@@ -77,7 +78,7 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
 // Function App
 resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
   name: functionAppName
-  location: location
+  location: deploymentLocation
   kind: 'functionapp,linux'
   identity: {
     type: 'SystemAssigned'
