@@ -1,0 +1,55 @@
+name: FunctionApp
+summary: Azure Function App deployment using Bicep
+description: Deploys an Azure Function App with App Service Plan and Storage Account. Supports both Consumption and Premium plans.
+templatePath: main.bicep
+parameters:
+- id: "functionAppName"
+  name: "Function App Name"
+  description: "Name of the Function App"
+  type: "string"
+  required: false
+- id: "location"
+  name: "Location"
+  description: "Azure region where resources will be deployed"
+  type: "string"
+  default: "eastus"
+  required: false
+- id: "appServicePlanSku"
+  name: "App Service Plan SKU"
+  description: "The pricing tier for the App Service Plan"
+  type: "string"
+  default: "Y1"
+  allowed:
+    - "Y1"
+    - "EP1"
+    - "EP2"
+    - "EP3"
+- id: "storageAccountSku"
+  name: "Storage Account SKU"
+  description: "The SKU for the Storage Account"
+  type: "string"
+  default: "Standard_LRS"
+  allowed:
+    - "Standard_LRS"
+    - "Standard_GRS"
+    - "Standard_RAGRS"
+    - "Standard_ZRS"
+    - "Premium_LRS"
+- id: "functionAppRuntime"
+  name: "Function App Runtime"
+  description: "The runtime stack for the Function App"
+  type: "string"
+  default: "dotnet"
+  allowed:
+    - "dotnet"
+    - "dotnet-isolated"
+    - "java"
+    - "node"
+    - "python"
+    - "powershell"
+- id: "functionAppRuntimeVersion"
+  name: "Runtime Version"
+  description: "The version of the runtime stack"
+  type: "string"
+  default: "8"
+runner: Bicep
