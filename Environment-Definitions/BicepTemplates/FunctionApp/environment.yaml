@@ -1,6 +1,6 @@
 name: FunctionApp
-summary: This is a deployment of an Azure Function App using Bicep.
-description: Deploys a Function App with App Service Plan, Storage Account, and Application Insights for monitoring
+summary: This is a deployment of an Azure Function App using Bicep with managed identity authentication.
+description: Deploys a secure Function App with App Service Plan, Storage Account, and Application Insights. Uses managed identity for storage authentication, disables basic publishing credentials, and follows Azure security best practices.
 templatePath: main.bicep
 parameters:
 - id: "appName"
