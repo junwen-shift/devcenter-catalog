@@ -26,8 +26,9 @@ parameters:
   name: "Pricing Tier"
   description: "The pricing tier for the hosting plan"
   type: "string"
-  default: "Y1"
+  default: "FC1"
   allowed:
+    - "FC1"
     - "Y1"
     - "EP1"
     - "EP2"

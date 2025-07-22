@@ -15,12 +15,13 @@ param runtime string = 'dotnet'
 
 @description('The pricing tier for the hosting plan.')
 @allowed([
+  'FC1'
   'Y1'
   'EP1'
   'EP2'
   'EP3'
 ])
-param sku string = 'Y1'
+param sku string = 'FC1'
 
 @description('The version of the runtime to use.')
 param runtimeVersion string = '8'
@@ -55,7 +56,7 @@ resource hostingPlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   kind: 'linux'
   sku: {
     name: sku
-    tier: sku == 'Y1' ? 'Dynamic' : 'ElasticPremium'
+    tier: sku == 'FC1' ? 'FlexConsumption' : sku == 'Y1' ? 'Dynamic' : 'ElasticPremium'
   }
   properties: {
     reserved: true
