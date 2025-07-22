@@ -1,5 +1,5 @@
-@description('The name of the function app that you wish to create.')
-param appName string = 'fnapp${uniqueString(resourceGroup().id)}'
+@description('The name of the function app.')
+param functionAppName string = 'fnapp${uniqueString(resourceGroup().id)}'
 
 @description('The location into which your Azure resources should be deployed.')
 param location string = resourceGroup().location
@@ -25,10 +25,9 @@ param sku string = 'Y1'
 @description('The version of the runtime to use.')
 param runtimeVersion string = '8'
 
-var functionAppName = appName
-var hostingPlanName = '${appName}-plan'
-var applicationInsightsName = '${appName}-ai'
-var storageAccountName = '${toLower(take(appName, 11))}${uniqueString(resourceGroup().id)}'
+var hostingPlanName = '${functionAppName}-plan'
+var applicationInsightsName = '${functionAppName}-ai'
+var storageAccountName = '${toLower(take(replace(functionAppName, '-', ''), 11))}${uniqueString(resourceGroup().id)}'
 var functionWorkerRuntime = runtime
 var deploymentLocation = location != '' ? location : resourceGroup().location
 
