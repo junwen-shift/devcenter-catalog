@@ -195,24 +195,6 @@ resource functionApp 'Microsoft.Web/sites@2024-04-01' = {
   }  
 }
 
-// Disable SCM basic auth
-resource functionAppScmBasicAuth 'Microsoft.Web/sites/basicPublishingCredentialsPolicies@2023-12-01' = {
-  name: 'scm'
-  parent: functionApp
-  properties: {
-    allow: false
-  }
-}
-
-// Disable FTP basic auth
-resource functionAppFtpBasicAuth 'Microsoft.Web/sites/basicPublishingCredentialsPolicies@2023-12-01' = {
-  name: 'ftp'
-  parent: functionApp
-  properties: {
-    allow: false
-  }
-}
-
 // Storage Blob Data Owner role assignment for Function App
 resource storageRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(storageAccount.id, functionApp.id, 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b')
