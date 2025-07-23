@@ -33,7 +33,7 @@ var functionWorkerRuntime = runtime
 var deploymentLocation = location != '' ? location : resourceGroup().location
 
 // Storage Account
-resource storageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {
+resource storageAccount 'Microsoft.Storage/storageAccounts@2024-01-01' = {
   name: storageAccountName
   location: deploymentLocation
   sku: {
@@ -41,26 +41,37 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {
   }
   kind: 'StorageV2'
   properties: {
-    supportsHttpsTrafficOnly: true
+    accessTier: 'Hot'
     minimumTlsVersion: 'TLS1_2'
-    defaultToOAuthAuthentication: true
+    supportsHttpsTrafficOnly: true
     allowBlobPublicAccess: false
+    allowSharedKeyAccess: false
+    allowCrossTenantReplication: false
+    allowedCopyScope: 'AAD'
+    defaultToOAuthAuthentication: true
+    routingPreference: {
+      routingChoice: 'MicrosoftRouting'
+      publishMicrosoftEndpoints: true
+      publishInternetEndpoints: false
+    }
+    networkAcls: {
+      defaultAction: 'Allow'
+      bypass: 'AzureServices'
+    }
     publicNetworkAccess: 'Enabled'
   }
 }
 
 // Hosting Plan
-resource hostingPlan 'Microsoft.Web/serverfarms@2022-03-01' = {
+resource hostingPlan 'Microsoft.Web/serverfarms@2024-04-01' = {
   name: hostingPlanName
   location: deploymentLocation
-  kind: 'linux'
+  kind: 'functionapp'
   sku: {
-    name: sku
-    tier: sku == 'FC1' ? 'FlexConsumption' : sku == 'Y1' ? 'Dynamic' : 'ElasticPremium'
+    name: 'FC1'
   }
   properties: {
-    reserved: true
-    zoneRedundant: false
+    reserved: true // Linux Service Plan
   }
 }
 
@@ -76,7 +87,7 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
 }
 
 // Function App
-resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
+resource functionApp 'Microsoft.Web/sites@2024-04-01' = {
   name: functionAppName
   location: deploymentLocation
   kind: 'functionapp,linux'
@@ -90,22 +101,20 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
     publicNetworkAccess: 'Enabled'
     httpsOnly: true
     siteConfig: {
+      cors: {
+        allowedOrigins: [
+          'https://portal.azure.com'
+        ]
+        supportCredentials: true
+      }
       appSettings: [
         {
           name: 'AzureWebJobsStorage__credential'
           value: 'managedidentity'
         }
         {
-          name: 'AzureWebJobsStorage__blobServiceUri'
-          value: 'https://${storageAccountName}.blob.core.windows.net'
-        }
-        {
-          name: 'AzureWebJobsStorage__queueServiceUri'
-          value: 'https://${storageAccountName}.queue.core.windows.net'
-        }
-        {
-          name: 'AzureWebJobsStorage__tableServiceUri'
-          value: 'https://${storageAccountName}.table.core.windows.net'
+          name: 'AzureWebJobsStorage__accountName'
+          value: storageAccountName
         }
         {
           name: 'FUNCTIONS_EXTENSION_VERSION'
@@ -137,7 +146,7 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
 }
 
 // Disable SCM basic auth
-resource functionAppScmBasicAuth 'Microsoft.Web/sites/basicPublishingCredentialsPolicies@2022-09-01' = {
+resource functionAppScmBasicAuth 'Microsoft.Web/sites/basicPublishingCredentialsPolicies@2023-12-01' = {
   name: 'scm'
   parent: functionApp
   properties: {
@@ -146,7 +155,7 @@ resource functionAppScmBasicAuth 'Microsoft.Web/sites/basicPublishingCredentials
 }
 
 // Disable FTP basic auth
-resource functionAppFtpBasicAuth 'Microsoft.Web/sites/basicPublishingCredentialsPolicies@2022-09-01' = {
+resource functionAppFtpBasicAuth 'Microsoft.Web/sites/basicPublishingCredentialsPolicies@2023-12-01' = {
   name: 'ftp'
   parent: functionApp
   properties: {
