@@ -144,9 +144,6 @@ resource functionApp 'Microsoft.Web/sites@2024-04-01' = {
           value: applicationInsights.properties.ConnectionString
         }
       ]
-      ftpsState: 'FtpsOnly'
-      minTlsVersion: '1.2'
-      linuxFxVersion: runtime == 'dotnet' ? 'DOTNET-ISOLATED|${runtimeVersion}.0' : runtime == 'node' ? 'NODE|${runtimeVersion}' : runtime == 'python' ? 'PYTHON|${runtimeVersion}' : 'JAVA|${runtimeVersion}'
     }
   }, sku == 'FC1' ? {
     functionAppConfig: {
@@ -169,6 +166,33 @@ resource functionApp 'Microsoft.Web/sites@2024-04-01' = {
       }
     }
   } : {})
+
+  resource webConfig 'config' = {
+    name: 'web'
+    properties: {
+      minTlsVersion: '1.3'
+      scmMinTlsVersion: '1.3'
+      minTlsCipherSuite: 'TLS_AES_128_GCM_SHA256'
+      http20Enabled: true
+      ftpsState: 'Disabled'
+      use32BitWorkerProcess: false
+      localMySqlEnabled: false
+      netFrameworkVersion: 'v9.0'
+    }
+  }
+
+  resource basicPublishingCredentialsPoliciesFtp 'basicPublishingCredentialsPolicies' = {
+    name: 'ftp'
+    properties: {
+      allow: false
+    }
+  }
+  resource basicPublishingCredentialsPoliciesScm 'basicPublishingCredentialsPolicies' = {
+    name: 'scm'
+    properties: {
+      allow: false
+    }
+  }  
 }
 
 // Disable SCM basic auth
