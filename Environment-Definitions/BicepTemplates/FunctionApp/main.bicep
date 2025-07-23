@@ -29,7 +29,7 @@ param runtimeVersion string = '9.0'
 var hostingPlanName = '${functionAppName}-plan'
 var applicationInsightsName = '${functionAppName}-ai'
 var storageAccountName = '${toLower(take(replace(functionAppName, '-', ''), 11))}${uniqueString(resourceGroup().id)}'
-var functionWorkerRuntime = runtime
+var functionWorkerRuntime = runtime == 'dotnet' ? 'dotnet-isolated' : runtime
 var deploymentLocation = location != '' ? location : resourceGroup().location
 
 // Storage Account
@@ -142,10 +142,6 @@ resource functionApp 'Microsoft.Web/sites@2024-04-01' = {
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: applicationInsights.properties.ConnectionString
-        }
-        {
-          name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: functionWorkerRuntime
         }
       ]
       ftpsState: 'FtpsOnly'
