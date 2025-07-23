@@ -133,11 +133,6 @@ resource functionApp 'Microsoft.Web/sites@2024-04-01' = {
           value: functionWorkerRuntime
         }
       ]
-      cors: {
-        allowedOrigins: [
-          'https://portal.azure.com'
-        ]
-      }
       ftpsState: 'FtpsOnly'
       minTlsVersion: '1.2'
       linuxFxVersion: runtime == 'dotnet' ? 'DOTNET-ISOLATED|${runtimeVersion}.0' : runtime == 'node' ? 'NODE|${runtimeVersion}' : runtime == 'python' ? 'PYTHON|${runtimeVersion}' : 'JAVA|${runtimeVersion}'
