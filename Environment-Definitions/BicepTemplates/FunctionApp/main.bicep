@@ -24,7 +24,7 @@ param runtime string = 'dotnet'
 param sku string = 'FC1'
 
 @description('The version of the runtime to use.')
-param runtimeVersion string = '8'
+param runtimeVersion string = '9.0'
 
 var hostingPlanName = '${functionAppName}-plan'
 var applicationInsightsName = '${functionAppName}-ai'
@@ -62,13 +62,28 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2024-01-01' = {
   }
 }
 
+// Blob Service for Storage Account
+resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2024-01-01' = {
+  name: 'default'
+  parent: storageAccount
+}
+
+// Deployments Container
+resource deploymentsContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2024-01-01' = {
+  name: 'deployments'
+  parent: blobService
+  properties: {
+    publicAccess: 'None'
+  }
+}
+
 // Hosting Plan
 resource hostingPlan 'Microsoft.Web/serverfarms@2024-04-01' = {
   name: hostingPlanName
   location: deploymentLocation
   kind: 'functionapp'
   sku: {
-    name: 'FC1'
+    name: sku
   }
   properties: {
     reserved: true // Linux Service Plan
@@ -94,7 +109,7 @@ resource functionApp 'Microsoft.Web/sites@2024-04-01' = {
   identity: {
     type: 'SystemAssigned'
   }
-  properties: {
+  properties: union({
     serverFarmId: hostingPlan.id
     reserved: true
     clientAffinityEnabled: false
@@ -137,7 +152,27 @@ resource functionApp 'Microsoft.Web/sites@2024-04-01' = {
       minTlsVersion: '1.2'
       linuxFxVersion: runtime == 'dotnet' ? 'DOTNET-ISOLATED|${runtimeVersion}.0' : runtime == 'node' ? 'NODE|${runtimeVersion}' : runtime == 'python' ? 'PYTHON|${runtimeVersion}' : 'JAVA|${runtimeVersion}'
     }
-  }
+  }, sku == 'FC1' ? {
+    functionAppConfig: {
+      deployment: {
+        storage: {
+          type: 'blobContainer'
+          value: '${storageAccount.properties.primaryEndpoints.blob}deployments'
+          authentication: {
+            type: 'SystemAssignedIdentity'
+          }
+        }
+      }
+      scaleAndConcurrency: {
+        maximumInstanceCount: 100
+        instanceMemoryMB: 2048
+      }
+      runtime: {
+        name: functionWorkerRuntime
+        version: runtimeVersion
+      }
+    }
+  } : {})
 }
 
 // Disable SCM basic auth

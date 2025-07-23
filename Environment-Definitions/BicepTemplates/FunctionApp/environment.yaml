@@ -21,7 +21,7 @@ parameters:
   name: "Runtime Version"
   description: "The version of the runtime to use"
   type: "string"
-  default: "8"
+  default: "9.0"
 - id: "sku"
   name: "Pricing Tier"
   description: "The pricing tier for the hosting plan"
